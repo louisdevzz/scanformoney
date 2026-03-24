@@ -32,6 +32,7 @@ Create `.env` file with:
 ```env
 TELEGRAM_BOT_TOKEN=your_bot_token
 TELEGRAM_CHANNEL_ID=your_channel_id
+TELEGRAM_SEND_DELAY_SECONDS=30
 SCAN_INTERVAL_MINUTES=30
 SUPERTEAM_AGENT_API_KEY=optional_superteam_agent_api_key
 MAX_NOTIFICATIONS_PER_SCAN=1
@@ -43,6 +44,7 @@ SEND_SUMMARY_WHEN_NO_DETAILS=false
 
 Notes:
 - `SCAN_INTERVAL_MINUTES` is clamped to `5-30` minutes.
+- `TELEGRAM_SEND_DELAY_SECONDS` controls delay between messages (default: `30`).
 - On first startup, the bot sends all currently scraped opportunities to Telegram.
 - From the next scans onward, it switches back to incremental updates.
 - `SUPERTEAM_AGENT_API_KEY` enables real Superteam listings (`/api/agents/listings/live`).
