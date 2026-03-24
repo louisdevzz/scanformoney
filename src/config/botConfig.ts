@@ -3,6 +3,9 @@ import { BotConfig } from '../types/bounty';
 export function getBotConfig(): BotConfig {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const channelId = process.env.TELEGRAM_CHANNEL_ID;
+  const rawTelegramSendDelaySeconds = parseInt(process.env.TELEGRAM_SEND_DELAY_SECONDS || '30', 10);
+  const telegramSendDelaySeconds = Math.max(1, Number.isNaN(rawTelegramSendDelaySeconds) ? 30 : rawTelegramSendDelaySeconds);
+  const telegramMessageDelayMs = telegramSendDelaySeconds * 1000;
   const rawInterval = parseInt(process.env.SCAN_INTERVAL_MINUTES || '30', 10);
   const scanIntervalMinutes = Math.min(30, Math.max(5, Number.isNaN(rawInterval) ? 30 : rawInterval));
   const superteamAgentApiKey = process.env.SUPERTEAM_AGENT_API_KEY;
@@ -23,6 +26,7 @@ export function getBotConfig(): BotConfig {
   return {
     token,
     channelId,
+    telegramMessageDelayMs,
     scanIntervalMinutes,
     superteamAgentApiKey,
     maxNotificationsPerScan,

@@ -31,6 +31,7 @@ export interface ScraperConfig {
 export interface BotConfig {
   token: string;
   channelId: string;
+  telegramMessageDelayMs: number;
   scanIntervalMinutes: number;
   superteamAgentApiKey?: string;
   maxNotificationsPerScan: number;

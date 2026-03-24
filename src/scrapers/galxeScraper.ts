@@ -23,6 +23,7 @@ interface GalxeResponse {
         releasedAt: number | null;
         tags: string[];
         space?: {
+          alias?: string;
           name?: string;
         };
         tokenReward?: {
@@ -43,7 +44,7 @@ export class GalxeScraper extends BaseScraper {
   async scrape(): Promise<Bounty[]> {
     try {
       const query = {
-        query: 'query { campaigns(input:{first:60,listType:Newest,statuses:[Active]}) { list { id name type rewardName rewardType endTime startTime createdAt releasedAt tags space { name } tokenReward { tokenSymbol userTokenAmount tokenDecimal } } } }',
+        query: 'query { campaigns(input:{first:60,listType:Newest,statuses:[Active]}) { list { id name type rewardName rewardType endTime startTime createdAt releasedAt tags space { alias name } tokenReward { tokenSymbol userTokenAmount tokenDecimal } } } }',
       };
 
       const response = await fetch('https://graphigo.prd.galaxy.eco/query', {
@@ -87,7 +88,7 @@ export class GalxeScraper extends BaseScraper {
           reward,
           currency: campaign.tokenReward?.tokenSymbol || 'USD',
           deadline,
-          link: `https://app.galxe.com/quest/${campaign.id}`,
+          link: buildGalxeQuestLink(campaign.id, campaign.space?.alias),
           tags,
           description: campaign.rewardName || `Galxe ${campaign.type} campaign`,
           category: inferredCategory,
@@ -100,6 +101,17 @@ export class GalxeScraper extends BaseScraper {
       return [];
     }
   }
+}
+
+function buildGalxeQuestLink(campaignId: string, spaceAlias?: string): string {
+  const trimmedCampaignId = campaignId.trim();
+  const trimmedAlias = spaceAlias?.trim();
+
+  if (trimmedAlias) {
+    return `https://app.galxe.com/quest/${encodeURIComponent(trimmedAlias)}/${encodeURIComponent(trimmedCampaignId)}?refer=space_home`;
+  }
+
+  return `https://app.galxe.com/quest/${encodeURIComponent(trimmedCampaignId)}`;
 }
 
 function toDateFromUnix(value: number | null | undefined): Date | null {

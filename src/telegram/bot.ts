@@ -4,10 +4,12 @@ import { formatBountyMessage, formatBountyMessagePlainText } from '../formatters
 export class TelegramBot {
   private token: string;
   private channelId: string;
+  private messageDelayMs: number;
 
-  constructor(token: string, channelId: string) {
+  constructor(token: string, channelId: string, messageDelayMs: number = 30_000) {
     this.token = token;
     this.channelId = channelId;
+    this.messageDelayMs = messageDelayMs;
   }
 
   async sendMessage(bounty: Bounty): Promise<boolean> {
@@ -22,14 +24,17 @@ export class TelegramBot {
 
   async sendMultipleMessages(bounties: Bounty[]): Promise<string[]> {
     const sentIds: string[] = [];
-    
-    for (const bounty of bounties) {
+
+    for (const [index, bounty] of bounties.entries()) {
       try {
         await this.sendBountyMessageWithFallback(bounty);
         sentIds.push(bounty.id);
-        await this.sleep(1000);
       } catch (error) {
         console.error(`Failed to send bounty ${bounty.id}:`, error);
+      } finally {
+        if (index < bounties.length - 1) {
+          await this.sleep(this.messageDelayMs);
+        }
       }
     }
 
@@ -81,18 +86,40 @@ export class TelegramBot {
       payload.parse_mode = parseMode;
     }
     
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+    const maxAttempts = 5;
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Telegram API error: ${error}`);
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        return;
+      }
+
+      const responseText = await response.text();
+      let retryAfterSeconds = 0;
+
+      try {
+        const parsed = JSON.parse(responseText) as { parameters?: { retry_after?: number } };
+        retryAfterSeconds = parsed.parameters?.retry_after ?? 0;
+      } catch {
+        retryAfterSeconds = 0;
+      }
+
+      const shouldRetry = response.status === 429 && retryAfterSeconds > 0 && attempt < maxAttempts;
+      if (!shouldRetry) {
+        throw new Error(`Telegram API error: ${responseText}`);
+      }
+
+      await this.sleep(retryAfterSeconds * 1000);
     }
+
+    throw new Error('Telegram API error: exceeded retry attempts');
   }
 
   private sleep(ms: number): Promise<void> {

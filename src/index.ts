@@ -24,7 +24,7 @@ class BountyScanner {
 
   constructor() {
     const config = getBotConfig();
-    this.bot = new TelegramBot(config.token, config.channelId);
+    this.bot = new TelegramBot(config.token, config.channelId, config.telegramMessageDelayMs);
     this.store = new DataStore();
     this.scrapers = [
       new SuperteamScraper(config.superteamAgentApiKey),
