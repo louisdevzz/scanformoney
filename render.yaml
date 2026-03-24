@@ -1,0 +1,31 @@
+services:
+  - type: worker
+    name: scanformoney
+    runtime: node
+    plan: free
+    autoDeploy: true
+    buildCommand: pnpm install --frozen-lockfile && pnpm build
+    startCommand: pnpm start
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHANNEL_ID
+        sync: false
+      - key: SCAN_INTERVAL_MINUTES
+        value: 30
+      - key: MAX_NOTIFICATIONS_PER_SCAN
+        value: 1
+      - key: MAX_ITEM_AGE_HOURS
+        value: 24
+      - key: MAX_BOUNTY_AGE_HOURS
+        value: 48
+      - key: MAX_HACKATHON_AGE_HOURS
+        value: 120
+      - key: SEND_SUMMARY_WHEN_NO_DETAILS
+        value: false
+      - key: SUPERTEAM_AGENT_API_KEY
+        sync: false
+      - key: SQLITE_DB_PATH
+        value: /tmp/bounties.db
