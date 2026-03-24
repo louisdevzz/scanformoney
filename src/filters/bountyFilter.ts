@@ -1,7 +1,7 @@
 import { Bounty, FilterConfig } from '../types/bounty';
 
 export const DEFAULT_FILTER_CONFIG: FilterConfig = {
-  minReward: 1000,
+  minReward: 100,
   minDaysRemaining: 3,
   categories: ['dev'],
   targets: ['global'],

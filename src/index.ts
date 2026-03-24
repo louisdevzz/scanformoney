@@ -77,8 +77,9 @@ class BountyScanner {
 
       if (this.isFirstScan) {
         const firstScanItems = allNewBounties.filter((item: Bounty) => item.source !== 'github');
-        bountiesToSend = this.takeNewestItems(firstScanItems, firstScanItems.length);
-        console.log(`  First scan mode: sending all current opportunities (${bountiesToSend.length})`);
+        const filteredFirstScanItems = filterBounties(firstScanItems);
+        bountiesToSend = this.takeNewestItems(filteredFirstScanItems, filteredFirstScanItems.length);
+        console.log(`  First scan mode: sending all filtered opportunities (${bountiesToSend.length})`);
       } else {
         const baseMaxAge = Math.max(this.maxItemAgeHours, this.maxBountyAgeHours, this.maxHackathonAgeHours);
         const pendingBounties = this.store.getPendingNotifications(baseMaxAge);
